@@ -129,10 +129,6 @@ impl std::str::FromStr for SpirvTarget {
 
         let result = Self { env, vendor };
 
-        if result.memory_model() == MemoryModel::OpenCL {
-            return Err(error());
-        }
-
         Ok(result)
     }
 }
