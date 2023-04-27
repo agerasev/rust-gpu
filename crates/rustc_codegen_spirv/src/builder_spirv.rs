@@ -5,9 +5,7 @@ use crate::symbols::Symbols;
 use crate::target::SpirvTarget;
 use crate::target_feature::TargetFeature;
 use rspirv::dr::{Block, Builder, Module, Operand};
-use rspirv::spirv::{
-    AddressingModel, Capability, MemoryModel, Op, SourceLanguage, StorageClass, Word,
-};
+use rspirv::spirv::{Capability, MemoryModel, Op, SourceLanguage, StorageClass, Word};
 use rspirv::{binary::Assemble, binary::Disassemble};
 use rustc_arena::DroplessArena;
 use rustc_data_structures::fx::{FxHashMap, FxHashSet};
@@ -408,6 +406,7 @@ impl<'tcx> BuilderSpirv<'tcx> {
     ) -> Self {
         let version = target.spirv_version();
         let memory_model = target.memory_model();
+        let addressing_model = target.addressing_model();
 
         let mut builder = Builder::new();
         builder.set_version(version.0, version.1);
@@ -444,7 +443,17 @@ impl<'tcx> BuilderSpirv<'tcx> {
             }
         }
 
-        add_cap(&mut builder, &mut enabled_capabilities, Capability::Shader);
+        if memory_model == MemoryModel::OpenCL {
+            for cap in [
+                Capability::Kernel,
+                Capability::Addresses,
+                Capability::GenericPointer,
+            ] {
+                add_cap(&mut builder, &mut enabled_capabilities, cap);
+            }
+        } else {
+            add_cap(&mut builder, &mut enabled_capabilities, Capability::Shader);
+        }
         if memory_model == MemoryModel::Vulkan {
             if version < (1, 5) {
                 add_ext(
@@ -463,7 +472,7 @@ impl<'tcx> BuilderSpirv<'tcx> {
         // The linker will always be ran on this module
         add_cap(&mut builder, &mut enabled_capabilities, Capability::Linkage);
 
-        builder.memory_model(AddressingModel::Logical, memory_model);
+        builder.memory_model(addressing_model, memory_model);
 
         Self {
             source_map: tcx.sess.source_map(),

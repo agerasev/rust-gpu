@@ -185,6 +185,7 @@ const EXECUTION_MODELS: &[(&str, ExecutionModel)] = {
         ("closest_hit", ExecutionModel::ClosestHitKHR),
         ("miss", ExecutionModel::MissKHR),
         ("callable", ExecutionModel::CallableKHR),
+        ("kernel", Kernel),
     ]
 };
 

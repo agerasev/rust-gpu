@@ -1,4 +1,4 @@
-use rspirv::spirv::MemoryModel;
+use rspirv::spirv::{AddressingModel, MemoryModel};
 use rustc_target::spec::{Cc, LinkerFlavor, PanicStrategy, Target, TargetOptions};
 use spirv_tools::TargetEnv;
 
@@ -39,6 +39,36 @@ impl SpirvTarget {
             | TargetEnv::WebGPU_0
             | TargetEnv::Vulkan_1_1_Spirv_1_4
             | TargetEnv::Vulkan_1_2 => MemoryModel::Vulkan,
+        }
+    }
+
+    pub fn addressing_model(&self) -> AddressingModel {
+        match self.env {
+            TargetEnv::Universal_1_0
+            | TargetEnv::Universal_1_1
+            | TargetEnv::Universal_1_2
+            | TargetEnv::Universal_1_3
+            | TargetEnv::Universal_1_4
+            | TargetEnv::Universal_1_5
+            | TargetEnv::OpenGL_4_0
+            | TargetEnv::OpenGL_4_1
+            | TargetEnv::OpenGL_4_2
+            | TargetEnv::OpenGL_4_3
+            | TargetEnv::OpenGL_4_5
+            | TargetEnv::Vulkan_1_0
+            | TargetEnv::Vulkan_1_1
+            | TargetEnv::WebGPU_0
+            | TargetEnv::Vulkan_1_1_Spirv_1_4
+            | TargetEnv::Vulkan_1_2 => AddressingModel::Logical,
+
+            TargetEnv::OpenCL_2_1
+            | TargetEnv::OpenCL_2_2
+            | TargetEnv::OpenCL_1_2
+            | TargetEnv::OpenCLEmbedded_1_2
+            | TargetEnv::OpenCL_2_0
+            | TargetEnv::OpenCLEmbedded_2_0
+            | TargetEnv::OpenCLEmbedded_2_1
+            | TargetEnv::OpenCLEmbedded_2_2 => AddressingModel::Physical32,
         }
     }
 
